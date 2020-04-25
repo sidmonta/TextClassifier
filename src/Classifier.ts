@@ -1,4 +1,4 @@
-import { Database } from 'sqlite3'
+import BetterSqlite3 from 'better-sqlite3'
 import { existsSync } from 'fs'
 import { FeaturesFun, getWords } from './Features'
 
@@ -13,6 +13,11 @@ type categoryList = {
   [key: string]: number
 }
 
+type Row = any
+
+/**
+ *
+ */
 export default class Classifier {
   protected getFeatures: FeaturesFun
   // fc
@@ -23,7 +28,7 @@ export default class Classifier {
 
   private useDb: boolean
   private databasePath: string
-  private database: Database
+  private database: BetterSqlite3.Database
 
   constructor(options: ClassifierOptions = {}) {
     this.getFeatures = options.features || getWords
@@ -39,18 +44,16 @@ export default class Classifier {
     ) {
       this.useDb = true
       this.databasePath = options.database.dbPath
-      this.database = new Database(this.databasePath, console.error)
-      this.database.serialize(() => {
-        this.database.parallelize(() => {
-          this.database.exec(`
-            CREATE TABLE IF NOT EXISTS features_x_category(feature, category, count)
-          `)
-          this.database.exec(`
-            CREATE TABLE IF NOT EXISTS category_count(category, count)
-          `)
-        })
-      })
+      this.database = new BetterSqlite3(this.databasePath)
+      this.database.exec(`CREATE TABLE IF NOT EXISTS features_x_category(feature, category, count)`)
+      this.database.exec(`CREATE TABLE IF NOT EXISTS category_count(category, count)`)
+
+      this.preloadFeatXCat()
     }
+  }
+
+  set features(feature: FeaturesFun) {
+    this.getFeatures = feature
   }
 
   close() {
@@ -67,51 +70,53 @@ export default class Classifier {
 
   // incf
   increasePair(feature: string, category: string): Promise<boolean> {
-    if (this.useDb) {
-      return new Promise((resolve, reject) => {
-        this.database.serialize(async () => {
-          const count = await this.timesFeatureInCategory(feature, category)
-          const query = count === 0
-            ? 'INSERT INTO features_x_category VALUES (?, ?, 1)'
-            : 'UPDATE features_x_category SET count = ? WHERE feature = ? AND category = ?'
-
-          this.database.run(query, [feature, category],
-            (error: Error) => {
-              if (error) {
-                reject(error)
-              }
-              resolve(true)
-            })
-        })
-      })
-    } else {
+    const setFeature = (feature: string, category: string): void => {
       const hasFeature = this.featureXcategory.has(feature)
       const categories = hasFeature ? this.featureXcategory.get(feature) : {}
-
       categories[category] = categories[category] ? categories[category] + 1 : 1
-
       this.featureXcategory.set(feature, categories)
-      return Promise.resolve(true)
+    }
+
+    if (this.useDb) {
+      return new Promise(async (resolve, reject) => {
+        const count = await this.timesFeatureInCategory(feature, category)
+        const query = count === 0
+          ? 'INSERT INTO features_x_category VALUES (:feature, :category, :count)'
+          : 'UPDATE features_x_category SET count = :count WHERE feature = :feature AND category = :category'
+        try {
+          this.database.prepare(query).run({
+            feature,
+            category,
+            count: count + 1
+          })
+          setFeature(feature, category)
+          resolve(true)
+        } catch (error) {
+          reject(error)
+        }
+      })
+    } else {
+      setFeature(feature, category)
     }
   }
 
   // incc
   increaseCount(category: string): Promise<boolean> {
     if (this.useDb) {
-      return new Promise((resolve, reject) => {
-        this.database.serialize(async () => {
-          const count = await this.itemsInCategory(category)
-          const query = count === 0
-            ? 'INSERT INTO category_count VALUES (?1, ?2)'
-            : 'UPDATE category_count SET count = ?2 WHERE category = ?1'
-
-          this.database.run(query, [category, count + 1], (error: Error) => {
-            if (error) {
-              reject(error)
-            }
-            resolve(true)
+      return new Promise(async (resolve, reject) => {
+        const count = await this.itemsInCategory(category)
+        const query = count === 0
+          ? 'INSERT INTO category_count VALUES (:category, :count)'
+          : 'UPDATE category_count SET count = :count WHERE category = :category'
+        try {
+          this.database.prepare(query).run({
+            category,
+            count: count + 1
           })
-        })
+          resolve(true)
+        } catch (error) {
+          reject(error)
+        }
       })
     } else {
       const hasCategory = this.categoryCount.has(category)
@@ -123,86 +128,55 @@ export default class Classifier {
 
   // fcount
   timesFeatureInCategory(feature: string, category: string): Promise<number> {
-    if (this.useDb) {
-      return new Promise((resolve, reject) => {
-        this.database.serialize(() => {
-          this.database.get('SELECT count FROM features_x_category WHERE feature = ? AND category = ?', [feature, category], (err, row) => {
-            if (err) {
-              reject(err)
-            }
-            resolve(row?.count || 0)
-          })
-        })
-      })
+    if (this.featureXcategory.has(feature)) {
+      return Promise.resolve(this.featureXcategory.get(feature)[category] || 0)
     } else {
-      if (this.featureXcategory.has(feature)) {
-        return Promise.resolve(this.featureXcategory.get(feature)[category] || 0)
-      }
       return Promise.resolve(0)
     }
   }
 
   // catcount
   itemsInCategory(category: string): Promise<number> {
-    if (this.useDb) {
-      return new Promise((resolve, reject) => {
-        this.database.serialize(() => {
-          this.database.get('SELECT count FROM category_count WHERE category = ?', [category], (err, row) => {
-            if (err) {
-              reject(err)
-            }
-            resolve(row?.count || 0)
-          })
-        })
-      })
-    } else {
+    if (!this.useDb) {
       return Promise.resolve(this.categoryCount.get(category) || 0)
     }
+
+    return this.dbWrap(
+      'SELECT count FROM category_count WHERE category = ?',
+      row => row?.count || 0,
+      'get',
+      [category]
+    ) as Promise<number>
   }
 
   // totalcount
   totItems(): Promise<number> {
-    if (this.useDb) {
-      return new Promise((resolve, reject) => {
-        this.database.serialize(() => {
-          this.database.get('SELECT SUM(count) as c FROM category_count', (err, row) => {
-            if (err) {
-              reject(err)
-            }
-            resolve(row?.c || 0)
-          })
-        })
-      })
-    } else {
+    if (!this.useDb) {
       return Promise.resolve(Array.from(this.categoryCount.values()).reduce((a, b) => a + b))
     }
+
+    return this.dbWrap(
+      'SELECT SUM(count) as c FROM category_count',
+      row => row?.c || 0,
+    ) as Promise<number>
   }
 
   get categories(): Promise<string[]> {
-    if (this.useDb) {
-      return new Promise((resolve, reject) => {
-        this.database.serialize(() => {
-          this.database.all('SELECT category FROM category_count', (err, all) => {
-            if (err) {
-              reject(err)
-            }
-
-            resolve(all.map(cat => cat?.category || 0))
-          })
-        })
-      })
-    } else {
+    if (!this.useDb) {
       return Promise.resolve(Array.from(this.categoryCount.keys()))
     }
+
+    return this.dbWrap(
+      'SELECT category FROM category_count',
+      all => { return all.map(cat => cat?.category || 0) },
+      'all'
+    ) as Promise<string[]>
   }
 
   async train(item: unknown, category: string): Promise<void> {
     const features = this.getFeatures(item)
 
-    for (let key of features.keys()) {
-      await this.increasePair(key, category)
-    }
-
+    await Promise.all(Array.from(features.keys()).map(key => this.increasePair(key, category)))
     await this.increaseCount(category)
   }
 
@@ -223,15 +197,14 @@ export default class Classifier {
     ap: number = 0.5
   ): Promise<number> {
     calcProp = calcProp.bind(this)
-    const basicProb = await calcProp(feature, category)
-
-    const allCategoties = await this.categories
+    const basicProb = calcProp(feature, category)
+    const allCategories = await this.categories
     const tmp = await Promise.all(
-      allCategoties.map(async cat => await this.timesFeatureInCategory(feature, cat))
+      allCategories.map(cat => this.timesFeatureInCategory(feature, cat))
     )
     const totals = tmp.reduce((a, b) => a + b)
 
-    return ((weight * ap) + totals * basicProb) / (weight + totals)
+    return ((weight * ap) + totals * (await basicProb)) / (weight + totals)
   }
 
   async probability(item: unknown, category: string): Promise<number> {
@@ -242,8 +215,9 @@ export default class Classifier {
     const probs = {}
     let max = 0
     let bestCategory = null
-    const allCategoties = await this.categories
-    for (let category of allCategoties) {
+    const allCategories = await this.categories
+
+    for (let category of allCategories) {
       probs[category] = await this.probability(item, category)
       if (probs[category] > max) {
         max = probs[category]
@@ -258,5 +232,38 @@ export default class Classifier {
       }
     }
     return bestCategory
+  }
+
+  private preloadFeatXCat() {
+    return this.dbWrap(
+      'SELECT count, feature, category FROM features_x_category',
+      (rows: Row[]): number => {
+        rows.forEach(({ count, feature, category }) => {
+          this.featureXcategory.set(feature, {
+            [category]: count || 0
+          })
+        })
+        return 0
+      },
+      'all'
+    )
+  }
+
+  private dbWrap(
+    query: string,
+    funRow: (row: Row | Row[]) => number | string,
+    type: 'all' | 'get' = 'get',
+    params: (string | number)[] = [],
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const row = this.database.prepare(query)[type](...params)
+        resolve(
+          funRow.call(this, row)
+        )
+      } catch (error) {
+        reject(error)
+      }
+    })
   }
 }
