@@ -2,11 +2,13 @@ import Classifier, { ClassifierOptions } from '../Classifier'
 
 export default class Fisher extends Classifier {
   protected minimums: Map<string, number>
+  protected frequencySum: Map<string, number>
 
   constructor(options: ClassifierOptions = {}) {
     super(options)
 
     this.minimums = new Map<string, number>()
+    this.frequencySum = new Map<string, number>()
   }
 
   setMinimum(category: string, min: number): void {
@@ -42,8 +44,7 @@ export default class Fisher extends Classifier {
     return Math.min(sum, 1)
   }
 
-  async fisherProp(item: unknown, category: string): Promise<number> {
-    const features = this.getFeatures(item)
+  async fisherProp(features: Map<string, number>, category: string): Promise<number> {
     const featureKey = Array.from(features.keys())
     const tmp = await Promise.all(featureKey.map(feature => this.weigthedProbability(feature, category, this.categoryProbs)))
     const probs = tmp
@@ -58,8 +59,9 @@ export default class Fisher extends Classifier {
     let best = def
     let max = 0
     const allCategories = await this.categories
+    const features = this.getFeatures(item)
     for (let category of allCategories) {
-      let prob = await this.fisherProp(item, category)
+      let prob = await this.fisherProp(features, category)
       if (prob > this.getMinimum(category) && prob > max) {
         best = category
         max = prob
