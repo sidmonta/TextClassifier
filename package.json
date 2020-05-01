@@ -25,6 +25,7 @@
   "module": "node",
   "dependencies": {
     "better-sqlite3": "^6.0.1",
+    "rxjs": "^6.5.5",
     "stopword": "^1.0.1"
   }
 }

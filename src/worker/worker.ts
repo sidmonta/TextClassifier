@@ -1,25 +1,24 @@
-import NaiveBayes from '../algoritms/NaiveBayes'
-import { featureWthMetadata } from '../Features'
+import ClassifierFactory, { ClassifierAlgorithms } from '../ClassifierFactory'
+import * as featuresF from '../Features'
 
+// Reset name file in process argument
 const args = process.argv.slice(2)
 
 const dbPath = args[1]
-const data = JSON.parse(args[3])
+const algorithm: ClassifierAlgorithms = args[3] as ClassifierAlgorithms
+const featureFun = args[5]
+const data = JSON.parse(args[7])
 
-
-const classifier = new NaiveBayes({
-  features: featureWthMetadata,
+const classifier = ClassifierFactory.create(algorithm, {
+  features: featuresF[featureFun],
   database: {
     dbPath
   }
 })
 
 async function classify(data) {
-  let { metadata, description, name, id, dewey } = data
-  metadata = metadata.split('\n')
-  metadata.push(name)
-  const result = await classifier.classify({ metadata, content: description })
-  process.send({ id, result, dewey })
+  const result = await classifier.classify(data)
+  process.send(result)
   process.exit()
 }
 
