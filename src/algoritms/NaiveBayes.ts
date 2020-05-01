@@ -1,8 +1,8 @@
 import Classifier from '../Classifier'
 
-export default class NaiveBayes extends Classifier {
+export default class NaiveBayes<E> extends Classifier<E> {
 
-  async documentProbability(item: unknown, category: string): Promise<number> {
+  async documentProbability(item: E, category: string): Promise<number> {
     const features = this.getFeatures(item)
 
     const featureKeys = Array.from(features.keys())
@@ -17,7 +17,7 @@ export default class NaiveBayes extends Classifier {
     }, 1)
   }
 
-  async probability(item: unknown, category: string): Promise<number> {
+  async probability(item: E, category: string): Promise<number> {
     const categoryProb = await this.itemsInCategory(category) / await this.totItems()
     const docProp = await this.documentProbability(item, category)
     return categoryProb * docProp

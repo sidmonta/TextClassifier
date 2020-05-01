@@ -1,10 +1,10 @@
 import Classifier, { ClassifierOptions } from '../Classifier'
 
-export default class Fisher extends Classifier {
+export default class Fisher<E> extends Classifier<E> {
   protected minimums: Map<string, number>
   protected frequencySum: Map<string, number>
 
-  constructor(options: ClassifierOptions = {}) {
+  constructor(options: ClassifierOptions<E> = {}) {
     super(options)
 
     this.minimums = new Map<string, number>()
@@ -55,7 +55,7 @@ export default class Fisher extends Classifier {
     return this.inverseChi2(featureScore, features.size * 2)
   }
 
-  async classify(item: unknown, def: string = 'unknown'): Promise<string> {
+  async classify(item: E, def: string = 'unknown'): Promise<string> {
     let best = def
     let max = 0
     const allCategories = await this.categories

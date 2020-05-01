@@ -7,7 +7,7 @@ import Fisher from '../src/algoritms/Fisher'
 
 
 const resetDb = () => {
-  const path = __dirname + '/../prova.db'
+  const path = __dirname + '/test.db'
   unlinkSync(path)
   writeFileSync(path, '')
 }
@@ -84,7 +84,7 @@ describe('Fisher with db', async () => {
 
   const cl = new Fisher({
     database: {
-      dbPath: __dirname + '/../prova.db'
+      dbPath: __dirname + '/test.db'
     }
   })
 

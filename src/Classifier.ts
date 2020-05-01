@@ -2,8 +2,8 @@ import BetterSqlite3 from 'better-sqlite3'
 import { existsSync } from 'fs'
 import { FeaturesFun, getWords } from './Features'
 
-export type ClassifierOptions = {
-  features?: FeaturesFun
+export type ClassifierOptions<E> = {
+  features?: FeaturesFun<E>
   database?: {
     dbPath: string
   }
@@ -18,8 +18,8 @@ type Row = any
 /**
  *
  */
-export default class Classifier {
-  protected getFeatures: FeaturesFun
+export default class Classifier<E> {
+  protected getFeatures: FeaturesFun<E>
   // fc
   protected featureXcategory: Map<string, categoryList>
   // cc
@@ -30,7 +30,7 @@ export default class Classifier {
   private databasePath: string
   private database: BetterSqlite3.Database
 
-  constructor(options: ClassifierOptions = {}) {
+  constructor(options: ClassifierOptions<E> = {}) {
     this.getFeatures = options.features || getWords
 
     this.featureXcategory = new Map<string, categoryList>()
@@ -52,7 +52,7 @@ export default class Classifier {
     }
   }
 
-  set features(feature: FeaturesFun) {
+  set features(feature: FeaturesFun<E>) {
     this.getFeatures = feature
   }
 
@@ -173,7 +173,7 @@ export default class Classifier {
     ) as Promise<string[]>
   }
 
-  async train(item: unknown, category: string): Promise<void> {
+  async train(item: E, category: string): Promise<void> {
     const features = this.getFeatures(item)
 
     await Promise.all(Array.from(features.keys()).map(key => this.increasePair(key, category)))
