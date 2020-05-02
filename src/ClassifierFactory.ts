@@ -1,6 +1,6 @@
 import { ClassifierOptions } from "./Classifier"
-import NaiveBayes from "./algoritms/NaiveBayes"
-import Fisher from "./algoritms/Fisher"
+import NaiveBayes from "./algorithms/NaiveBayes"
+import Fisher from "./algorithms/Fisher"
 
 export type ClassifierAlgorithms = 'NaiveBayes' | 'Fisher'
 

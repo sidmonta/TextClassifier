@@ -1,4 +1,4 @@
-import NaiveBayes from '../src/algoritms/NaiveBayes'
+import NaiveBayes from '../src/algorithms/NaiveBayes'
 import { featureWthMetadata } from '../src/Features'
 import BetterSqlite3 from 'better-sqlite3'
 

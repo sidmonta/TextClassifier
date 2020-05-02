@@ -2,8 +2,8 @@ import assert from 'assert'
 import { describe, sampleTrain } from './utility'
 import { unlinkSync, writeFileSync } from 'fs'
 import Classifier from '../src/Classifier'
-import NaiveBayes from '../src/algoritms/NaiveBayes'
-import Fisher from '../src/algoritms/Fisher'
+import NaiveBayes from '../src/algorithms/NaiveBayes'
+import Fisher from '../src/algorithms/Fisher'
 
 
 const resetDb = () => {
