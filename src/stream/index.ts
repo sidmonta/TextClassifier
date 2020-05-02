@@ -11,24 +11,26 @@ export type ClassifyOpt = {
   featureFun: string
 }
 
-export default function classify<E>(opt: ClassifyOpt): (identify: string, item: E) => Observable<[string, string]> {
-  const flat = (arr: string[][]) => [].concat(...arr)
-  const args: string[][] = []
+const numCpus = cpus().length
+const workerFile = resolve(__dirname, '../worker/worker.js')
+const controlWaitFork = 800
 
-  const numCpus = cpus().length
+export default function classify<E>(opt: ClassifyOpt): (identify: string, item: E) => Observable<[string, string]> {
+  const args: string[] = []
+
   let activeFork = 0
 
-  args.push(['--dbpath', opt.dbPath])
-  args.push(['--algorithm', opt.algorithm])
-  args.push(['--feature', opt.featureFun])
+  args.push('--dbpath', opt.dbPath)
+  args.push('--algorithm', opt.algorithm)
+  args.push('--feature', opt.featureFun)
 
   return (identify: string, item: E) => {
     return new Observable<[string, string]>(subscriber => {
       const interval = setInterval(() => {
         if (activeFork < numCpus) {
           cluster.setupMaster({
-            exec: resolve(__dirname, '../worker/worker.js'),
-            args: [...flat(args), '--data', JSON.stringify(item)],
+            exec: workerFile,
+            args: [...args, '--data', JSON.stringify(item)],
             silent: false
           })
           const worker = cluster.fork()
@@ -43,7 +45,7 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
             clearInterval(interval)
           })
         }
-      }, 600)
+      }, controlWaitFork)
     })
   }
 }
