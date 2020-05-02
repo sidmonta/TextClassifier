@@ -4,7 +4,9 @@
   "description": "Classifier for Babele project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build-worker": "tsc --esModuleInterop -t es5 src/worker/worker.ts && rm src/*.js && rm src/algorithms/*.js",
+    "test": "ts-node tests/classifier.spec.ts",
+    "test-stream": "npm run build-worker && ts-node tests/stream.spec.ts"
   },
   "keywords": [
     "classifier",
