@@ -10,13 +10,19 @@ const featureFun = args[5]
 const data = JSON.parse(args[7])
 
 const classifier = ClassifierFactory.create(algorithm, {
-  features: featuresF[featureFun],
   database: {
     dbPath
   }
 })
 
 async function classify(data) {
+  if (featuresF[featureFun]) {
+    classifier.features = featuresF[featureFun]
+  } else {
+    classifier.features = (await import(featureFun)).default()
+  }
+
+
   const result = await classifier.classify(data)
   process.send(result)
   process.exit()
