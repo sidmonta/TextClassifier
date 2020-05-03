@@ -15,13 +15,12 @@ const classifier = ClassifierFactory.create(algorithm, {
   }
 })
 
-async function classify(data) {
+async function classify(data: unknown): Promise<void> {
   if (featuresF[featureFun]) {
     classifier.features = featuresF[featureFun]
   } else {
     classifier.features = (await import(featureFun)).default()
   }
-
 
   const result = await classifier.classify(data)
   process.send(result)

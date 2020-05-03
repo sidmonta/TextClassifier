@@ -15,7 +15,7 @@ export function getWords<E>(doc: E | string): Map<string, number> {
 
 export function featureWthMetadata<E extends { metadata: { [a: string]: string }, content: string }>(
   { metadata, content }: E
-) {
+): Map<string, number> {
   const words = new Map<string, number>()
   const metadataToParse = Object.values(metadata).filter(met => !met.match(/[0-9-]+/))
   for (const metadataValue of metadataToParse) {

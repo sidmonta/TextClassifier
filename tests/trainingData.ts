@@ -1,23 +1,20 @@
 import NaiveBayes from '../src/algorithms/NaiveBayes'
 import { featureWthMetadata } from '../src/Features'
 import BetterSqlite3 from 'better-sqlite3'
-
+import { resolve } from 'path'
 const db = new BetterSqlite3('../../Training/database.db')
 
 // Constant
 const dataForTrain = 10640
-const dataForTest = 1181
-
-console.log(__dirname + '/prova.db')
 
 const classifier = new NaiveBayes({
   features: featureWthMetadata,
   database: {
-    dbPath: __dirname + '/prova.db'
+    dbPath: resolve(__dirname, './prova.db')
   }
 })
 
-async function train() {
+async function train(): Promise<void> {
   const all = db.prepare(`
     SELECT td.metadata , td.description, dewey.name , dewey.id
     FROM
@@ -29,7 +26,7 @@ async function train() {
 
   console.log(`Training on ${all.length} data`)
 
-  for (let row of all) {
+  for (const row of all) {
     let { metadata, description, name, id } = row
     metadata = metadata.split('\n')
     metadata.push(name)

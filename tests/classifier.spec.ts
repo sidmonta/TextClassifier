@@ -4,12 +4,13 @@ import { unlinkSync, writeFileSync } from 'fs'
 import Classifier from '../src/Classifier'
 import NaiveBayes from '../src/algorithms/NaiveBayes'
 import Fisher from '../src/algorithms/Fisher'
+import { join } from 'path'
 
+const dbPath = join(__dirname, './test.db')
 
-const resetDb = () => {
-  const path = __dirname + '/test.db'
-  unlinkSync(path)
-  writeFileSync(path, '')
+const resetDb = (): void => {
+  unlinkSync(dbPath)
+  writeFileSync(dbPath, '')
 }
 
 describe('Check count of feature for category', async () => {
@@ -84,7 +85,7 @@ describe('Fisher with db', async () => {
 
   const cl = new Fisher({
     database: {
-      dbPath: __dirname + '/test.db'
+      dbPath: dbPath
     }
   })
 

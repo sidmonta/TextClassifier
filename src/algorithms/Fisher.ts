@@ -33,7 +33,7 @@ export default class Fisher<E> extends Classifier<E> {
   }
 
   inverseChi2(chi: number, df: number): number {
-    let m = chi / 2
+    const m = chi / 2
     let sum = Math.exp(-m)
     let term = sum
     for (let i = 1; i <= Math.trunc(df / 2); i++) {
@@ -55,13 +55,13 @@ export default class Fisher<E> extends Classifier<E> {
     return this.inverseChi2(featureScore, features.size * 2)
   }
 
-  async classify(item: E, def: string = 'unknown'): Promise<string> {
+  async classify(item: E, def = 'unknown'): Promise<string> {
     let best = def
     let max = 0
     const allCategories = await this.categories
     const features = this.getFeatures(item)
-    for (let category of allCategories) {
-      let prob = await this.fisherProp(features, category)
+    for (const category of allCategories) {
+      const prob = await this.fisherProp(features, category)
       if (prob > this.getMinimum(category) && prob > max) {
         best = category
         max = prob

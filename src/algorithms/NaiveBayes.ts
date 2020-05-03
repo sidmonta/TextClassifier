@@ -1,7 +1,6 @@
 import Classifier from '../Classifier'
 
 export default class NaiveBayes<E> extends Classifier<E> {
-
   async documentProbability(item: E, category: string): Promise<number> {
     const features = this.getFeatures(item)
 

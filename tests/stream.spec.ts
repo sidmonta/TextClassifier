@@ -5,10 +5,12 @@ import { describe, sampleTrain } from './utility'
 import Classifier from '../src/Classifier'
 import classify from '../src/stream'
 
-(async function () {
+import { resolve } from 'path'
+
+(async function (): Promise<void> {
   const classy = new Classifier({
     database: {
-      dbPath: __dirname + '/test.db'
+      dbPath: resolve(__dirname, './test.db')
     }
   })
 
@@ -19,7 +21,7 @@ import classify from '../src/stream'
 
 describe('Check stream good', async () => {
   const classify$ = classify<string>({
-    dbPath: __dirname + '/test.db',
+    dbPath: resolve(__dirname, './test.db'),
     algorithm: 'Fisher',
     featureFun: 'getWords'
   })
@@ -31,7 +33,7 @@ describe('Check stream good', async () => {
 
 describe('Check stream bad', async () => {
   const classify$ = classify<string>({
-    dbPath: __dirname + '/test.db',
+    dbPath: resolve(__dirname, './test.db'),
     algorithm: 'Fisher',
     featureFun: 'getWords'
   })
@@ -41,11 +43,9 @@ describe('Check stream bad', async () => {
   }).unsubscribe()
 })
 
-
 describe('Check stream from stream', async () => {
-
   const classify$ = classify<string>({
-    dbPath: __dirname + '/test.db',
+    dbPath: resolve(__dirname, './test.db'),
     algorithm: 'Fisher',
     featureFun: 'getWords'
   })

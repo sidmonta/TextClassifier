@@ -6,8 +6,8 @@ import { cpus } from 'os'
 import { ClassifierAlgorithms } from '../ClassifierFactory'
 
 export type ClassifyOpt = {
-  dbPath: string,
-  algorithm: ClassifierAlgorithms,
+  dbPath: string
+  algorithm: ClassifierAlgorithms
   featureFun: string
 }
 
@@ -24,7 +24,7 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
   args.push('--algorithm', opt.algorithm)
   args.push('--feature', opt.featureFun)
 
-  return (identify: string, item: E) => {
+  return (identify: string, item: E): Observable<[string, string]> => {
     return new Observable<[string, string]>(subscriber => {
       const interval = setInterval(() => {
         if (activeFork < numCpus) {

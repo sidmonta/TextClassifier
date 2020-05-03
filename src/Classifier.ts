@@ -13,7 +13,7 @@ type categoryList = {
   [key: string]: number
 }
 
-type Row = any
+type Row = unknown
 
 /**
  *
@@ -45,8 +45,8 @@ export default class Classifier<E> {
       this.useDb = true
       this.databasePath = options.database.dbPath
       this.database = new BetterSqlite3(this.databasePath)
-      this.database.exec(`CREATE TABLE IF NOT EXISTS features_x_category(feature, category, count)`)
-      this.database.exec(`CREATE TABLE IF NOT EXISTS category_count(category, count)`)
+      this.database.exec('CREATE TABLE IF NOT EXISTS features_x_category(feature, category, count)')
+      this.database.exec('CREATE TABLE IF NOT EXISTS category_count(category, count)')
 
       this.preloadFeatXCat()
     }
@@ -56,7 +56,7 @@ export default class Classifier<E> {
     this.getFeatures = feature
   }
 
-  close() {
+  close(): void {
     this.database.close()
   }
 
@@ -64,7 +64,7 @@ export default class Classifier<E> {
     this.thresholds.set(category, threshold)
   }
 
-  getThreshold(category: string) {
+  getThreshold(category: string): number {
     return this.thresholds.get(category) || 1
   }
 
@@ -143,7 +143,7 @@ export default class Classifier<E> {
 
     return this.dbWrap(
       'SELECT count FROM category_count WHERE category = ?',
-      row => row?.count || 0,
+      (row: { count?: string }) => row?.count || 0,
       'get',
       [category]
     ) as Promise<number>
@@ -157,7 +157,7 @@ export default class Classifier<E> {
 
     return this.dbWrap(
       'SELECT SUM(count) as c FROM category_count',
-      row => row?.c || 0,
+      (row: { c?: string }) => row?.c || 0
     ) as Promise<number>
   }
 
@@ -168,7 +168,9 @@ export default class Classifier<E> {
 
     return this.dbWrap(
       'SELECT category FROM category_count',
-      all => { return all.map(cat => cat?.category || 0) },
+      (all: { category?: number }[]) => {
+        return all.map((cat: { category?: number }) => cat?.category || 0)
+      },
       'all'
     ) as Promise<string[]>
   }
@@ -193,8 +195,8 @@ export default class Classifier<E> {
     feature: string,
     category: string,
     calcProp: (feature: string, category: string) => Promise<number>,
-    weight: number = 1,
-    ap: number = 0.5
+    weight = 1,
+    ap = 0.5
   ): Promise<number> {
     calcProp = calcProp.bind(this)
     const basicProb = calcProp(feature, category)
@@ -208,16 +210,17 @@ export default class Classifier<E> {
   }
 
   async probability(item: unknown, category: string): Promise<number> {
+    item = category
     return Promise.resolve(0.5)
   }
 
-  async classify(item: unknown, def: string = ''): Promise<string> {
+  async classify(item: E, def = ''): Promise<string> {
     const probs = {}
     let max = 0
     let bestCategory = null
     const allCategories = await this.categories
 
-    for (let category of allCategories) {
+    for (const category of allCategories) {
       probs[category] = await this.probability(item, category)
       if (probs[category] > max) {
         max = probs[category]
@@ -225,7 +228,7 @@ export default class Classifier<E> {
       }
     }
 
-    for (let category in probs) {
+    for (const category in probs) {
       if (category === bestCategory) { continue }
       if (probs[category] * this.getThreshold(bestCategory) > probs[bestCategory]) {
         return def
@@ -234,8 +237,8 @@ export default class Classifier<E> {
     return bestCategory
   }
 
-  private preloadFeatXCat() {
-    return this.dbWrap(
+  private preloadFeatXCat(): void {
+    this.dbWrap(
       'SELECT count, feature, category FROM features_x_category',
       (rows: Row[]): number => {
         rows.forEach(({ count, feature, category }) => {
@@ -251,10 +254,10 @@ export default class Classifier<E> {
 
   private dbWrap(
     query: string,
-    funRow: (row: Row | Row[]) => number | string,
+    funRow: (row: Row | Row[]) => string | number | string[] | number[],
     type: 'all' | 'get' = 'get',
-    params: (string | number)[] = [],
-  ): Promise<any> {
+    params: (string | number)[] = []
+  ): Promise<string | number | string[] | number[]> {
     return new Promise((resolve, reject) => {
       try {
         const row = this.database.prepare(query)[type](...params)

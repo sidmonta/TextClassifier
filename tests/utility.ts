@@ -1,4 +1,4 @@
-export function describe(title: string, fun: () => void) {
+export function describe(title: string, fun: () => void): void {
   console.log('\x1b[36m' + title + '\x1b[0m')
   try {
     fun()

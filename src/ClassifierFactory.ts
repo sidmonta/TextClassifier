@@ -1,11 +1,11 @@
-import { ClassifierOptions } from "./Classifier"
-import NaiveBayes from "./algorithms/NaiveBayes"
-import Fisher from "./algorithms/Fisher"
+import { ClassifierOptions } from './Classifier'
+import NaiveBayes from './algorithms/NaiveBayes'
+import Fisher from './algorithms/Fisher'
 
 export type ClassifierAlgorithms = 'NaiveBayes' | 'Fisher'
 
 export default class ClassifierFactory {
-  static create<E>(algorithm: ClassifierAlgorithms, options: ClassifierOptions<E>) {
+  static create<E>(algorithm: ClassifierAlgorithms, options: ClassifierOptions<E>): NaiveBayes<E> | Fisher<E> {
     switch (algorithm) {
       case 'NaiveBayes':
         return new NaiveBayes<E>(options)
