@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { describe, sampleTrain } from './utility'
-import { unlinkSync, writeFileSync } from 'fs'
+import { exec } from 'child_process'
 import Classifier from '../src/Classifier'
 import NaiveBayes from '../src/algorithms/NaiveBayes'
 import Fisher from '../src/algorithms/Fisher'
@@ -8,10 +8,7 @@ import { join } from 'path'
 
 const dbPath = join(__dirname, './test.db')
 
-const resetDb = (): void => {
-  unlinkSync(dbPath)
-  writeFileSync(dbPath, '')
-}
+exec(`rm ${dbPath} && touch ${dbPath}`)
 
 describe('Check count of feature for category', async () => {
   const classy = new Classifier()
@@ -81,8 +78,6 @@ describe('Classify Fisher test', async () => {
 })
 
 describe('Fisher with db', async () => {
-  resetDb()
-
   const cl = new Fisher({
     database: {
       dbPath: dbPath
