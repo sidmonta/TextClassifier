@@ -18,6 +18,8 @@ const classifier = ClassifierFactory.create(algorithm, {
   }
 })
 
+// TODO: Assegnare le probabilità assunta in base al dominio (ontologia)
+
 /**
  * Serve per poter usare async/await
  *

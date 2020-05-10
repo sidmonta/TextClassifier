@@ -13,9 +13,9 @@ L’apprendimento avviene addestrando precedentemente il classificatore con docu
 
 Formalmente, definiamo:
 
-\\({D} = \{{{d}_{1},{d}_{2}, … ,{d}_{|D|}}\} \\) Un insieme di documenti iniziali;
+$${D} = \{{{d}_{1},{d}_{2}, … ,{d}_{|D|}}\}$$ Un insieme di documenti iniziali;
 
-\\({C} = \{{{c}_{1},{c}_{2}, … ,{c}_{|C|}}\} \\) Un insieme di categorie predefinite
+$${C} = \{{{c}_{1},{c}_{2}, … ,{c}_{|C|}}\}$$ Un insieme di categorie predefinite
 
 e definiamo, una funzione:
 \\[
@@ -23,7 +23,7 @@ e definiamo, una funzione:
 \\]
 che prende un documento \\({d} \in {D}\\) e una categoria \\({c} \in {C}\\) e determina se deve o no appartenere a quella categoria. Questa è la funzione ottima, cioè la funzione ritorna il risultato corretto. Ovviamente una funzione che dia un risultato esatto e sempre corretto non è pensabile considerando la verità di documenti ci si potrebbero incontrare.
 
-L’obbiettivo del classificatore è creare una funzione 
+L’obbiettivo del classificatore è creare una funzione
 \\[
     \theta’: {D} \times {C}  \to \{ {True}, {False} \}
 \\]
@@ -31,10 +31,10 @@ che approssima il più possibile la funzione \\(\theta\\) in modo da dare il ris
 
 Per poter analizzare efficacemente un documento trovando dei pattern comuni, il classificatore esegue una suddivisione del documento in caratteristiche che utilizzerà per classificare. Un esempio di suddivisione è per parole, cioè ogni parola del documento diviene una caratteristica del documento stesso, dal quale si possono togliere i duplicati e o le parole comuni che non identificano o caratterizzano il documento.
 
-    "the quick rabbit jumps fances and jumps a shrubbery" 
+    "the quick rabbit jumps fances and jumps a shrubbery"
     ==remove stopwords=> "quick rabbit jumps fances jumps shrubbery"
     ==extract feature=> {"quick", "rabbit", "jumps", "fances", "shrubbery"}
-    
+
 Si possono usare altre tipologie di estrazione delle caratteristiche che più si prestano a caratterizzare la tipologia di documenti su cui il classificatore lavorerà.
 
 ## Algoritmi
@@ -98,7 +98,7 @@ console.log(features)
 * **featureWthMetadata**
 
 ```ts
-declare featureWthMetadata<E extends { metadata: { [a: string]: string }, content: string }>({ metadata, content }: E): Map<string, number> 
+declare featureWthMetadata<E extends { metadata: { [a: string]: string }, content: string }>({ metadata, content }: E): Map<string, number>
 ```
 
 Questa funzione prende un documento che deve avere obbligatoriamente almeno la proprietà ```metadata```, che contiene i metadati del documento nel formato ```{"metadato": "valore", …}``` e la proprietà ```content``` che contiene il contenuto testuale del documento. Dal documento così passato le caratteristiche che lo compongono saranno i valori dei metadati del documento a cui si uniscono le caratteristiche estratte dal contenuto procedendo come nel metodo **getWords**
@@ -178,9 +178,9 @@ Per addestrare il classificatore basta eseguire il codice:
 ```js
     // …
     await classifier.train(doc, tag)
-    
+
     // Ad esempio
-    
+
     await cl.train('the quick rabbit jumps fances', 'good')
     await cl.train('buy pharmaceuticals now', 'bad')
     await cl.train('make quick money at the online casino', 'bad')
@@ -216,10 +216,10 @@ import ClassifierFactory from '../src/ClassifierFactory'
     await cl.train('the quick rabbit jumps fances', 'good')
     await cl.train('buy pharmaceuticals now', 'bad')
     await cl.train('make quick money at the online casino', 'bad')
-    
+
     // Classify
     const tag = classifier.classify('get money with trading online')
-    
+
     console.log(tag) // Print: bad
 })()
 ```
