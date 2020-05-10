@@ -102,3 +102,127 @@ declare featureWthMetadata<E extends { metadata: { [a: string]: string }, conten
 ```
 
 Questa funzione prende un documento che deve avere obbligatoriamente almeno la proprietà ```metadata```, che contiene i metadati del documento nel formato ```{"metadato": "valore", …}``` e la proprietà ```content``` che contiene il contenuto testuale del documento. Dal documento così passato le caratteristiche che lo compongono saranno i valori dei metadati del documento a cui si uniscono le caratteristiche estratte dal contenuto procedendo come nel metodo **getWords**
+
+Un esempio è il seguente:
+
+```js
+const document: Document = {
+    metadata: {
+        author: "William Shakespeare",
+        date: "23/03/1616",
+        title: "The Tragedy of Macbeth"
+    },
+    content: "the quick rabbit jumps fances and jumps a shrubbery",
+    updateDate: "11/04/2019",
+    link: "https://it.wikipedia.org/wiki/Macbeth"
+}
+
+const features = featureWthMetadata<Document>(document)
+
+console.log(features)
+
+// Result
+// Map(5) { "william shakespeare" => 1, "23/03/1616" => 1, "the tragedy of macbeth" => 1, "quick" => 1, "rabbit" => 1, "jumps" => 1, "fances" => 1, "shrubbery" => 1 }
+```
+
+
+## Utilizzo del Classificatore
+#### Creazione
+Per poter utilizzare il classificatore bisogna creare una nuova istanza del classificatore scegliendo l’algoritmo che utilizzerà per fare la classificazione, per fare ciò si possano seguire due strade:
+
+1. Creare direttamente l’istanza
+
+```typescript
+import NaiveBayes from '../src/algorithms/NaiveBayes'
+import Fisher from '../src/algorithms/Fisher'
+
+const classifier = new NaiveBayes<Document>(opt)
+
+// oppure
+
+const classifier = new Fisher<Document>(opt)
+```
+
+2. Creare tramite Factory
+
+```typescript
+import ClassifierFactory from '../src/ClassifierFactory'
+
+const algoritm = 'NaiveBayes' // or 'Fisher'
+
+const classifier = ClassifierFactory.create<Document>(algoritm, opt)
+```
+
+Per entrambi i metodi ogni classificatore prende opzionalmente come opzioni:
+
+```js
+{
+  features?: "Funzione per l'estrazione delle caratteristiche"
+  database?: {
+    dbPath: "percorso al database"
+  }
+}
+
+// ? sta a indicare l'opzionalità dell'opzione
+```
+
+
+> Nota: Il classificatore utilizza un database SQLite
+
+#### Addestramento
+Per poter funzionare il classificatore ha bisogno di un addestramento.
+> Qualora si stesse usando un database, ogni addestramento viene conservato e utilizzato per ogni nuova istanza o esecuzione.
+
+Per addestrare il classificatore basta eseguire il codice:
+
+```js
+    // …
+    await classifier.train(doc, tag)
+    
+    // Ad esempio
+    
+    await cl.train('the quick rabbit jumps fances', 'good')
+    await cl.train('buy pharmaceuticals now', 'bad')
+    await cl.train('make quick money at the online casino', 'bad')
+```
+
+che permette di assegnare a quel documento il tag.
+La funzione ritorna una ```Promise``` vuota
+
+#### Classificazione
+Una volta addestrato il proprio classificatore lo si può usare per ipotizzare il tag più probabile per un nuovo documento
+
+```javascript
+const tag = classifier.classify(newdoc)
+
+// Esempio
+const tag = classifier.classify('the quick brown fox jumps')
+console.log(tag) // good
+
+const tag = classifier.classify('get money with trading online')
+console.log(tag) // bad
+```
+
+
+#### Un esempio completo
+
+```js
+import ClassifierFactory from '../src/ClassifierFactory'
+
+(async function main() {
+    // Create
+    const classifier = ClassifierFactory.create<Document>('Fisher')
+    // Train
+    await cl.train('the quick rabbit jumps fances', 'good')
+    await cl.train('buy pharmaceuticals now', 'bad')
+    await cl.train('make quick money at the online casino', 'bad')
+    
+    // Classify
+    const tag = classifier.classify('get money with trading online')
+    
+    console.log(tag) // Print: bad
+})()
+```
+
+## Utilizzo con i Node Cluster Workers
+Per usare questa funzionalità occorre NodeJs >10
