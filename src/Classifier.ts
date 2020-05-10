@@ -235,6 +235,7 @@ export default class Classifier<E> {
       })
     } else {
       setFeature(feature, category)
+      return Promise.resolve(true)
     }
   }
 
