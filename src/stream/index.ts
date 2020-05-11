@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs'
+import { Observable, OperatorFunction } from 'rxjs'
+import { mergeMap } from 'rxjs/operators'
 import cluster from 'cluster'
 import { resolve } from 'path'
 import { cpus } from 'os'
@@ -76,4 +77,9 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
       }, controlWaitFork)
     })
   }
+}
+
+export function mergeClassify<E>(opt: ClassifyOpt): OperatorFunction<[string, E], [string, string]> {
+  const classify$ = classify<E>(opt)
+  return mergeMap(([id, item]) => classify$(id, item))
 }
