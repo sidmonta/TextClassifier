@@ -224,5 +224,75 @@ import ClassifierFactory from '../src/ClassifierFactory'
 })()
 ```
 
+## Versione funzionale
+Per questa versione si da per scontato che il classificatore utilizzi un database e che sia già stato addestrato.
+
+Il repository mette a disposizione una funzione che classifica i documenti evitando l'utilizzo di classi e istanze. Per utilizzarla basta importare la funzione.
+
+Questa funzione è "currificata". Questo comporta la possibilità di passare gli argomenti uno alla volta. Per precisazioni, si veda [qui](https://stackoverflow.com/questions/36314/what-is-currying)
+
+```js
+import classify from './src/fp'
+// ...
+const classifyFisher = classify({
+  algorithm: 'Fisher'
+  dbPath: 'path/to/db'
+})
+// ...
+const doc = 'get money with trading online'
+// ...
+const classResult = await classifyFisher(doc)
+console.log(classResult) // 'bad'
+```
+
+
 ## Utilizzo con i Node Cluster Workers
-Per usare questa funzionalità occorre NodeJs >10
+**Per usare questa funzionalità occorre NodeJs >10**
+
+Il classificatore, se allenato con molti documenti (necessario per avere classificazioni il più attendibili possibili) potrebbe richiedere tempo e risorse macchina onerose; per risolvere questo inconveniente si è messo a disposizione una versione del classificatore che fa uso di processi figli per poter eseguire in parallelo più classificazioni senza impattare sulle risorse del singolo thread in cui il programma gira.
+
+Questa versione funziona nella falsa riga della versione funzionale. Occorre però fare una precisazione: siccome non è possibile garantire che più classificazioni in parallelo concludano in ordine, occorre passare un identificativo insieme al documento da classificare, così da avere nella risposta un riscontro di quale documento, la risposta del classificatore, si riferisce. Cioè invece che ritornare il risultato della classificazione, ma ritorna una coppia ```[identificativo del documento, risultato della classificazione]```.
+
+Per usare questa versione si può procedere come segue:
+
+```js
+import classify from './src/worker'
+// ...
+const classifyFisher = classify({
+  algorithm: 'Fisher'
+  dbPath: 'path/to/db'
+})
+// ...
+// Create a list of documents
+const documents = [
+    { id: 1, doc: doc1 },
+    { id: 2, doc: doc2 },
+    { id: 3, doc: doc3 },
+    { id: 4, doc: doc4 },
+]
+// ...
+// For every documents run the classification and return the promise
+const runClassify = documents.map(([id, doc]) => {
+    return classify(id, doc)
+})
+// Wait that all classification ends
+const results = await Promise.all(runClassify)
+console.log(results)
+/* example of results
+[
+    [2, 'bad'],
+    [3, 'good'],
+    [1, 'good'],
+    [4, 'bad']
+]
+*/
+```
+
+Dove ```doc*``` identifica un qualsiasi documento da classificare.
+
+## Classificatore con RxJs e i Node Cluster Workers
+Un’ulteriore modalità di classificazione messa a disposizione combina l’utilizzo dei Node Cluster Workers e gli stream di dati gestiti con la libreria RxJs.
+
+Questa versione permette di utilizzare il classificatore come operatore di RxJs nel restante progetto **Biblioteca di Babele** che fa molto uso degli stream e RxJs.
+
+Questa versione non fa altro che trasformare le promise della versione con i Node Cluster Workers in uno stream di dati. Cioè permette, dato uno stream di documenti (con il loro identificativo) di trasformare ogni evento dello stream nella versione classificata.
