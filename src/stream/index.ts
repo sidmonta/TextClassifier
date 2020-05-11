@@ -80,6 +80,5 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
 }
 
 export function mergeClassify<E>(opt: ClassifyOpt): OperatorFunction<[string, E], [string, string]> {
-  const classify$ = classify<E>(opt)
-  return mergeMap(([id, item]) => classify$(id, item))
+  return mergeMap(([id, item]) => classify<E>(opt)(id, item))
 }
