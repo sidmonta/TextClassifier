@@ -13,21 +13,25 @@ L’apprendimento avviene addestrando precedentemente il classificatore con docu
 
 Formalmente, definiamo:
 
-$${D} = \{{{d}_{1},{d}_{2}, … ,{d}_{|D|}}\}$$ Un insieme di documenti iniziali;
+${D} = \{{{d}_{1},{d}_{2}, … ,{d}_{|D|}}\}$ Un insieme di documenti iniziali;
 
-$${C} = \{{{c}_{1},{c}_{2}, … ,{c}_{|C|}}\}$$ Un insieme di categorie predefinite
+${C} = \{{{c}_{1},{c}_{2}, … ,{c}_{|C|}}\}$ Un insieme di categorie predefinite
 
 e definiamo, una funzione:
-\\[
+
+$$
     \theta: {D} \times {C}  \to \{ {True}, {False} \}
-\\]
-che prende un documento \\({d} \in {D}\\) e una categoria \\({c} \in {C}\\) e determina se deve o no appartenere a quella categoria. Questa è la funzione ottima, cioè la funzione ritorna il risultato corretto. Ovviamente una funzione che dia un risultato esatto e sempre corretto non è pensabile considerando la verità di documenti ci si potrebbero incontrare.
+$$
+
+che prende un documento ${d} \in {D}$ e una categoria ${c} \in {C}$ e determina se deve o no appartenere a quella categoria. Questa è la funzione ottima, cioè la funzione ritorna il risultato corretto. Ovviamente una funzione che dia un risultato esatto e sempre corretto non è pensabile considerando la verità di documenti ci si potrebbero incontrare.
 
 L’obbiettivo del classificatore è creare una funzione
-\\[
+
+$$
     \theta’: {D} \times {C}  \to \{ {True}, {False} \}
-\\]
-che approssima il più possibile la funzione \\(\theta\\) in modo da dare il risultato migliore.
+$$
+
+che approssima il più possibile la funzione $\theta$ in modo da dare il risultato migliore.
 
 Per poter analizzare efficacemente un documento trovando dei pattern comuni, il classificatore esegue una suddivisione del documento in caratteristiche che utilizzerà per classificare. Un esempio di suddivisione è per parole, cioè ogni parola del documento diviene una caratteristica del documento stesso, dal quale si possono togliere i duplicati e o le parole comuni che non identificano o caratterizzano il documento.
 
@@ -44,12 +48,14 @@ Esistono molti algoritmi di classificazione, quelli implementati in questo proge
 #### **Naïve Bayes**
 È basata sul calcolo della probabilità del numero di occorrenze di una caratteristica in un documento. L’aspetto principale dell’algoritmo è l’uso del teorema di Bayes che viene usato per calcolare la probabilità che una caratteristica appartenga o meno a una categoria, conoscendo la frequenza con cui quella caratteristica si presenta nei documenti (precedentemente allenati) e la percentuale di volte che quella caratteristica sia classificata con quella categoria.
 
-Formalmente, sia \\({x} \in {X}\\) una caratteristica di un documento, con \\({X}\\) l’insieme delle caratteristiche e sia \\({y} \in {C}\\), allora il classificatore calcola:
+Formalmente, sia ${x} \in {X}$ una caratteristica di un documento, con ${X}$ l’insieme delle caratteristiche e sia ${y} \in {C}$, allora il classificatore calcola:
 
 ${p}({y}|{x})$ cioè la probabilità condizionata di ${y}$ conoscendo ${x}$ è data dalla formula:
-\\[
+
+$$
 {p}({y}|{x}) = \frac{{p}({x}|{y})}{{p}({x})} = \frac{{p}({x}|{y}){p}({y})}{\sum_{y’=1}^{C} {p}({x}|{y’}){p}({y’})}
-\\]
+$$
+
 ( ${p}({x})$ è la probabilità a priori)
 
 #### **Fisher**
@@ -67,7 +73,7 @@ Una qualunque funzione dovrà assomigliare a questa firma
 declare featureFunctionExtractor(document: E): Map<string, number>
 ```
 
-Dove ```E``` è la generica tipologia di un documento; mentre ```‌Map<string, number>``` sta a indicare ce la mappa delle caratteristiche sarà della forma
+Dove ```E``` è la generica tipologia di un documento; mentre ```Map<string, number>``` sta a indicare ce la mappa delle caratteristiche sarà della forma
 
 ```
 caratteristica: string
