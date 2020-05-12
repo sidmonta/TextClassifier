@@ -14,13 +14,13 @@ L’apprendimento avviene addestrando precedentemente il classificatore con docu
 Formalmente, definiamo:
 
 $$
-{D} = \{{{d}_{1},{d}_{2}, … ,{d}_{|D|}}\}
+  {D} = \{ {d}_{1}, {d}_{2}, … , {d}_{|D|} \}
 $$
 
 Un insieme di documenti iniziali;
 
 $$
-{C} = \{{{c}_{1},{c}_{2}, … ,{c}_{|C|}}\}
+  {C} = \{ {c}_{1}, {c}_{2}, … , {c}_{|C|} \}
 $$
 
 Un insieme di categorie predefinite
