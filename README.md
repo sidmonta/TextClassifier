@@ -14,7 +14,7 @@ L’apprendimento avviene addestrando precedentemente il classificatore con docu
 Formalmente, definiamo:
 
 $$
-  {D} = \{ {d}_{1}, {d}_{2}, … , {d}_{|D|} \}
+    {D} = \{ {d}_{1}, {d}_{2}, … , {d}_{|D|} \}
 $$
 
 Un insieme di documenti iniziali;
@@ -60,16 +60,34 @@ Formalmente, sia ${x} \in {X}$ una caratteristica di un documento, con ${X}$ l�
 
 ${p}({y}|{x})$ cioè la probabilità condizionata di ${y}$ conoscendo ${x}$ è data dalla formula:
 
-$$
-{p}({y}|{x}) = \frac{{p}({x}|{y})}{{p}({x})} = \frac{{p}({x}|{y}){p}({y})}{\sum_{y’=1}^{C} {p}({x}|{y’}){p}({y’})}
-$$
+\\[
+    {p}({y}|{x}) = \frac{{p}({x}|{y})}{{p}({x})} = \frac{{p}({x}|{y}){p}({y})}{\sum_{y’=1}^{C} {p}({x}|{y’}){p}({y’})}
+\\]
 
-( ${p}({x})$ è la probabilità a priori)
+( ${p}({y})$ è la probabilità a priori, cioè che una casuale caratteristica appartenga a quella categoria)
+
+Si può riscrivere come segue:
+
+\\[
+    {p}({Categoria}|{Documento}) = \frac{{p}({Documento}|{Categoria}) \times {p}({Categoria})}{{p}({Documento})}
+\\]
 
 #### **Fisher**
 Il Metodo Fisher calcola la probabilità di una categoria per ogni caratteristica del documento, quindi combina queste probabilità di funzionalità e confronta quella probabilità combinata con la probabilità di un insieme casuale di caratteristiche.
 
-//TODO: da aggiornare
+Il metodo prevede di calcolare quanto è probabile che un documento rientri in una categoria, sapendo che una particolare caratteristica appartenga a quella categoria; cioè: ${p}({Categoria}|{Caratteristica}), però questa probabilità viene condizionata dallo sbilanciamento tra il numero di documenti per ogni categoria.
+
+Per normalizzare questa inconveniente si utilizza la formula:
+
+\\[
+{p}({Categoria}|{Caratteristica}) = \frac{{p}({Caratteristica}|{Categoria})}{\sum_{c \in {C}} {p}({Caratteristica}|{c})}
+\\]
+
+Il metodo Fisher utilizza la distribuzione chi-quadrata sulla combinazione delle probabilità normalizzate di tutte le caratteristiche di un documento.
+
+\\[
+    {p}({Categoria}|{Documento}) = -2 * \ln({\prod_{x \in {X}} {p}({Categoria}|{x})})
+\\]
 
 ## Estrattori di caratteristiche
 Per poter ricavare delle regole o dei pattern da utilizzare per la classificazione di documenti, il classificatore necessita di un meccanismo per l’estrazione di caratteristiche che rappresentano il documento.
@@ -194,7 +212,6 @@ Per addestrare il classificatore basta eseguire il codice:
     await classifier.train(doc, tag)
 
     // Ad esempio
-
     await cl.train('the quick rabbit jumps fances', 'good')
     await cl.train('buy pharmaceuticals now', 'bad')
     await cl.train('make quick money at the online casino', 'bad')
@@ -224,14 +241,14 @@ console.log(tag) // bad
 import ClassifierFactory from '../src/ClassifierFactory'
 
 (async function main() {
-    // Create
+    // Creazione
     const classifier = ClassifierFactory.create<Document>('Fisher')
-    // Train
+    // Allenamento
     await cl.train('the quick rabbit jumps fances', 'good')
     await cl.train('buy pharmaceuticals now', 'bad')
     await cl.train('make quick money at the online casino', 'bad')
 
-    // Classify
+    // Classificazione
     const tag = classifier.classify('get money with trading online')
 
     console.log(tag) // Print: bad
@@ -277,22 +294,22 @@ const classifyFisher = classify({
   dbPath: 'path/to/db'
 })
 // ...
-// Create a list of documents
-const documents = [
+// Creo una lista di documenti
+const documents: Document[] = [
     { id: 1, doc: doc1 },
     { id: 2, doc: doc2 },
     { id: 3, doc: doc3 },
     { id: 4, doc: doc4 },
 ]
 // ...
-// For every documents run the classification and return the promise
+// Per ogni documento avvio la classificazione, che ritorna una Promise
 const runClassify = documents.map(([id, doc]) => {
     return classify(id, doc)
 })
-// Wait that all classification ends
+// Aspetto che tutte le promise ritornate dalla classificazione di ogni documento termini con i rispettivi risultati
 const results = await Promise.all(runClassify)
 console.log(results)
-/* example of results
+/* esempio di risultato
 [
     [2, 'bad'],
     [3, 'good'],
@@ -323,7 +340,7 @@ import classify from '../src/stream' // classifier stream
 import { of } from 'rxjs'
 import { mergeMap } from 'rxjs/operators'
 
-// Define the document stream
+// definisco lo stream di documenti
 const document$ = of(
     ['id', doc1],
     ['id2', doc2],
@@ -332,25 +349,25 @@ const document$ = of(
     ['id5', doc5]
 )
 
-// import classifier stream
+// definisco lo stream di dati per la classificazione
 const classify$ = classify<Document>({
     dbPath: 'path/to/db',
     algorithm: 'Fisher'
 })
 
-// new piped stream
+// nuovo stream che è il risultato della composizione dei due stream
 const piped$ = document$.pipe(
     mergeMap(([id, item]) => {
       return classify$(id, item)
     })
 )
 
-// now you can subscribe on that stream
+// ora ci si può iscrivere allo stream per recuperare i dati
 piped$.subscribe(resultOfClassifier => {
     const [id, result] = resultOfClassifier
     console.log(id, result)
 })
-/* print
+/* stampa
 $> id2, 'bad'
 $> id5, 'bad'
 $> id1, 'good'
