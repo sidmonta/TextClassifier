@@ -13,8 +13,15 @@
     "babele",
     "text-classifier"
   ],
-  "author": "Sidmonta <sidmonta.15@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sidmonta/TextClassifier.git"
+  },
+  "author": "Luca Montanera <sidmonta.15@gmail.com>",
   "license": "ISC",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@sidmonta"
+  },
   "devDependencies": {
     "@types/better-sqlite3": "^5.4.0",
     "@types/node": "^13.11.0",
