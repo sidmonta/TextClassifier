@@ -26,10 +26,10 @@ export default class NaiveBayes<E> extends Classifier<E> {
     const features = this.getFeatures(item)
 
     // Moltiplica la probabilità di tutte le caratteristiche insieme
-    const featureKeys = Array.from(features.keys())
+    const featureKeys = Array.from(features)
     const tmp = await Promise.all(
       featureKeys.map(
-        feature => this.weigthedProbability(feature, category, this.featureProbability)
+        ([feature, weigth]) => this.weigthedProbability(feature, category, this.featureProbability, weigth || 1)
       )
     )
 

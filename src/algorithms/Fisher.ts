@@ -114,8 +114,8 @@ export default class Fisher<E> extends Classifier<E> {
    */
   async fisherProp(features: Map<string, number>, category: string): Promise<number> {
     // Moltiplico tutte le probabilità insieme
-    const featureKey = Array.from(features.keys())
-    const tmp = await Promise.all(featureKey.map(feature => this.weigthedProbability(feature, category, this.categoryProbs)))
+    const featureKey = Array.from(features)
+    const tmp = await Promise.all(featureKey.map(([feature, weigth]) => this.weigthedProbability(feature, category, this.categoryProbs, weigth || 1)))
     const probs = tmp
       .reduce((a, b) => a * b, 1)
 
