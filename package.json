@@ -6,7 +6,8 @@
   "scripts": {
     "build-worker": "tsc --esModuleInterop -t es5 src/worker/worker.ts && rm src/*.js && rm src/algorithms/*.js",
     "test": "ts-node tests/classifier.spec.ts",
-    "test-stream": "npm run build-worker && ts-node tests/stream.spec.ts"
+    "test-stream": "npm run build-worker && ts-node tests/stream.spec.ts",
+    "start:idea": "ts-node %NODE_DEBUG_OPTION% --ignore false tests/classifier.spec.ts"
   },
   "keywords": [
     "classifier",
@@ -41,7 +42,7 @@
   },
   "module": "node",
   "dependencies": {
-    "better-sqlite3": "^6.0.1",
+    "better-sqlite3": "^7.0.1",
     "rxjs": "^6.5.5",
     "stopword": "^1.0.1"
   }

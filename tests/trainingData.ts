@@ -10,7 +10,7 @@ const dataForTrain = 10640
 const classifier = new NaiveBayes({
   features: featureWthMetadata,
   database: {
-    dbPath: resolve(__dirname, './prova.db')
+    dbPath: resolve(__dirname, '../../Training/database.db')
   }
 })
 
@@ -21,8 +21,7 @@ async function train(): Promise<void> {
       TrainingData td
       INNER JOIN data_x_dewey x ON (td.id = x.data_id )
       INNER JOIN dewey  ON (x.dewey_id = dewey.id )
-    ORDER BY td.id
-    LIMIT ?`).all(dataForTrain)
+    ORDER BY td.id`).all()
 
   console.log(`Training on ${all.length} data`)
 
