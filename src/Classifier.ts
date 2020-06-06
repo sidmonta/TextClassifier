@@ -78,7 +78,7 @@ export default class Classifier<E> {
    * @type {boolean}
    * @memberof Classifier
    */
-  private useDb: boolean
+  private readonly useDb: boolean
   /**
    * Percorso al file con il database
    *
@@ -86,7 +86,7 @@ export default class Classifier<E> {
    * @type {string}
    * @memberof Classifier
    */
-  private databasePath: string
+  private readonly databasePath: string
   /**
    * Istanza del database sqlite
    *
@@ -362,7 +362,7 @@ export default class Classifier<E> {
    * @memberof Classifier
    */
   async train(item: E, category: string): Promise<void> {
-    const features = this.getFeatures(item)
+    const features = await this.getFeatures(item)
 
     await Promise.all(Array.from(features.keys()).map(key => this.increasePair(key, category)))
     await this.increaseCount(category)
@@ -440,14 +440,13 @@ export default class Classifier<E> {
   /**
    * Determina la probabilità di un documento di appartenere a quella categoria
    *
-   * @param {unknown} item documento da determinare la probabilità
+   * @param item documento da determinare la probabilità
    * @param {string} category categoria su cui determinare la probabilità
    * @returns {Promise<number>} Probabilità di un documento di appartenere a
    * quella categoria
    * @memberof Classifier
    */
   async probability(item: unknown, category: string): Promise<number> {
-    item = category
     return Promise.resolve(0.5)
   }
 
@@ -504,7 +503,7 @@ export default class Classifier<E> {
         return 0
       },
       'all'
-    )
+    ).then().catch()
   }
 
   /**

@@ -92,7 +92,7 @@ export default class Fisher<E> extends Classifier<E> {
    * @returns {number} probabilità dal chi quadrato
    * @memberof Fisher
    */
-  private inverseChi2(chi: number, df: number): number {
+  private static inverseChi2(chi: number, df: number): number {
     const m = chi / 2
     let sum = Math.exp(-m)
     let term = sum
@@ -123,7 +123,7 @@ export default class Fisher<E> extends Classifier<E> {
     const featureScore = -2 * Math.log(probs)
 
     // Uso l'inverso chi2 per recuperare la probabilità
-    return this.inverseChi2(featureScore, features.size * 2)
+    return Fisher.inverseChi2(featureScore, features.size * 2)
   }
 
   /**
@@ -138,7 +138,7 @@ export default class Fisher<E> extends Classifier<E> {
     let best = def
     let max = 0
     const allCategories = await this.categories
-    const features = this.getFeatures(item)
+    const features = await this.getFeatures(item)
     // Cicla per cercare il risultato migliore
     for (const category of allCategories) {
       const prob = await this.fisherProp(features, category)

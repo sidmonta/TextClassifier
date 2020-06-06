@@ -23,7 +23,7 @@ export default class NaiveBayes<E> extends Classifier<E> {
    * @memberof NaiveBayes
    */
   async documentProbability(item: E, category: string): Promise<number> {
-    const features = this.getFeatures(item)
+    const features = await this.getFeatures(item)
 
     // Moltiplica la probabilità di tutte le caratteristiche insieme
     const featureKeys = Array.from(features)
