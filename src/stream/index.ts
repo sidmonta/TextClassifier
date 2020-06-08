@@ -38,6 +38,7 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
   const args: string[] = [] // argomenti da passare al processo fork
 
   let activeFork = 0 // numero di fork attualmente attivi
+  let currentIdentifyOnRun = []
 
   args.push('--dbpath', opt.dbPath)
   args.push('--algorithm', opt.algorithm)
@@ -49,7 +50,7 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
       // Creo un intervallo che aspetta finché una CPU non si sia liberata,
       // prima di lanciare un nuovo fork
       const interval = setInterval(() => {
-        if (activeFork < numCpus) { // Controllo se ci sono CPU libere
+        if (activeFork < numCpus && !currentIdentifyOnRun.includes(identify)) { // Controllo se ci sono CPU libere
           // Imposto le impostazioni del processo figlio, con il passaggio degli
           // argomenti
           cluster.setupMaster({
@@ -60,6 +61,7 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
           // Lancio il fork
           const worker = cluster.fork()
           activeFork = activeFork + 1
+          currentIdentifyOnRun.push(identify)
           // Se dal fork ricevo il messaggio con il risultato lo invio ai
           // subscriber dell'Observable
           worker.on('message', (msg: string) => subscriber.next([identify, msg]))
@@ -67,6 +69,7 @@ export default function classify<E>(opt: ClassifyOpt): (identify: string, item: 
           // Quando il processo ha finito l'esecuzione
           worker.on('exit', close => {
             activeFork = activeFork - 1
+            currentIdentifyOnRun = currentIdentifyOnRun.filter(id => id !== identify)
             if (close !== 0) {
               subscriber.error()
             }
