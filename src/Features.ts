@@ -1,4 +1,12 @@
-import { removeStopwords } from 'stopword'
+import { removeStopwords, en, de, it, es, fr, ru, pt } from 'stopword'
+
+const flatten = (arr: string[][]): string[] => arr
+  .reduce((flat, toFlatten) => flat.concat(toFlatten), [])
+
+const removeStopWords = (value: string[]): string[] => removeStopwords(value, [
+  ...flatten([en, de, it, es, fr, ru, pt]), // Rimuovi le stopwords di diverse lingue
+  ...['http', 'https', 'www', 'skos', 'vocab', 'com', 'org', 'info'] // Rimuovi stopwords custom per URL
+])
 
 /**
  * Tipologia che descrive la funzione di estrazione delle caratteristiche dei
@@ -19,7 +27,7 @@ export type FeaturesFun<E> = (doc: E) => Promise<Map<string, number>>
 export function getWords<E>(doc: E | string): Promise<Map<string, number>> {
   const regex = new RegExp('[^A-Za-z-]', 'gm')
   doc = doc.toString()
-  const wordsInDoc: [string, number][] = removeStopwords(doc.split(regex))
+  const wordsInDoc: [string, number][] = removeStopWords(doc.split(regex))
     .filter(word => word.length > 2 && word.length < 20)
     .map(word => [word.toLocaleLowerCase(), 1])
 
@@ -38,13 +46,14 @@ export async function featureWthMetadata<E extends { metadata: { [a: string]: st
   { metadata, content }: E
 ): Promise<Map<string, number>> {
   const words = new Map<string, number>()
-  const metadataToParse = Object.values(metadata).filter(met => !met.match(/[0-9-]+/))
-  for (const metadataValue of metadataToParse) {
-    words.set(metadataValue, 1)
-  }
-  const wordsOnDesc = await getWords(content)
-  for (const wd of Array.from(wordsOnDesc.keys())) {
-    words.set(wd, 1)
+
+  const componentToParse: string[] = Object.values(metadata).filter(met => !met.match(/[0-9-]+/))
+  componentToParse.push(content)
+  for (const wordsValue of componentToParse) {
+    const wordsOnDesc = await getWords(wordsValue)
+    for (const wd of wordsOnDesc.keys()) {
+      words.set(wd, 1)
+    }
   }
 
   return words

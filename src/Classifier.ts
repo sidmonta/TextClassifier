@@ -149,7 +149,9 @@ export default class Classifier<E> {
    * @memberof Classifier
    */
   close(): void {
-    this.database.close()
+    if (this.database) {
+      this.database.close()
+    }
   }
 
   /**
@@ -430,7 +432,7 @@ export default class Classifier<E> {
     )
     const totals = tmp.reduce((a, b) => a + b)
 
-    // Recuper la probabilità assunta
+    // Recupero la probabilità assunta
     const ap = this.getAssumedProbability(category)
 
     // Calcola la media pesata
