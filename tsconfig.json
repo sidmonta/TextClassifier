@@ -13,6 +13,7 @@
   "include": [
     "src"
   ],
+  "types" : ["node"],
   "exclude": [
     "node_modules",
     "**/*.spec.ts",

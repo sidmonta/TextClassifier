@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^5.4.0",
-    "@types/node": "^13.11.0",
+    "@types/node": "^13.13.38",
     "@types/sqlite3": "^3.1.6",
     "@types/stopword": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
