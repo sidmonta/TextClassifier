@@ -28,7 +28,7 @@ export function getWords<E>(doc: E | string): Promise<Map<string, number>> {
   const regex = new RegExp('[^A-Za-z-]', 'gm')
   doc = doc.toString()
   const wordsInDoc: [string, number][] = removeStopWords(doc.split(regex))
-    .filter(word => word.length > 2 && word.length < 20)
+    .filter(word => word.length > 3 && word.length < 20)
     .map(word => [word.toLocaleLowerCase(), 1])
 
   return Promise.resolve(new Map<string, number>(wordsInDoc))
