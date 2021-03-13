@@ -1,6 +1,6 @@
 {
   "name": "classifier",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Classifier for Babele project",
   "main": "./lib/ClassifierFactory.js",
   "files": [
